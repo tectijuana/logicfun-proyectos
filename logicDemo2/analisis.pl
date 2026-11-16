@@ -19,6 +19,9 @@
 
 % --- Sin dependencias: la biblioteca estándar de Python --------------------------
 
+% Tabling: la respuesta se calcula una vez y se recuerda.
+:- table reparto_tipico/2.
+
 %! reparto_tipico(-Media, -Mediana) is det.
 %  Tamaño del reparto de una película. Prolog junta los números; Python hace la estadística.
 reparto_tipico(Media, Mediana) :-

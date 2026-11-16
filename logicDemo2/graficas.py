@@ -16,7 +16,7 @@ def _figura(titulo, ancho=9, alto=5):
     fig = Figure(figsize=(ancho, alto), facecolor=FONDO, layout="constrained")
     ax = fig.subplots()
     ax.set_facecolor(FONDO)
-    ax.set_title(titulo, color=TEXTO, fontsize=14, loc="left")
+    ax.set_title(titulo, color=TEXTO, fontsize=14, loc="left", pad=14)
     ax.tick_params(colors=TEXTO)
     for lado in ("top", "right"):
         ax.spines[lado].set_visible(False)
@@ -27,12 +27,21 @@ def _figura(titulo, ancho=9, alto=5):
 
 def barras(titulo, etiquetas, valores, archivo, horizontal=False):
     """Dibuja barras y guarda el PNG. Devuelve la ruta del archivo."""
+    from matplotlib.ticker import MaxNLocator
+
     fig, ax = _figura(titulo)
-    etiquetas = [str(e) for e in etiquetas]
     if horizontal:
-        ax.barh(etiquetas[::-1], valores[::-1], color=AMBAR)
+        ax.barh([str(e) for e in etiquetas][::-1], valores[::-1], color=AMBAR)
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     else:
-        ax.bar(etiquetas, valores, color=AMBAR)
+        # Años o décadas: eje numérico, así los huecos se ven y las etiquetas no se enciman.
+        saltos = [b - a for a, b in zip(etiquetas, etiquetas[1:])]
+        ax.bar(etiquetas, valores, width=0.8 * min(saltos, default=1), color=AMBAR)
+        if len(etiquetas) <= 15:
+            ax.set_xticks(etiquetas)
+        else:
+            ax.xaxis.set_major_locator(MaxNLocator(integer=True, nbins=12))
+        ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     fig.savefig(archivo, dpi=120)
     return archivo
 

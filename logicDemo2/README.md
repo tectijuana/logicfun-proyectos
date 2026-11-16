@@ -5,13 +5,84 @@ con **Janus**, el puente entre SWI-Prolog y Python. Prolog sigue siendo el progr
 deduce los datos y llama a Python solo para lo que Python hace mejor, que aquí es
 estadística, gráficas (matplotlib) y análisis de grafos (networkx).
 
+## Interfaz
+
+La interfaz se diseña en [Google Stitch](https://stitch.withgoogle.com) con este prompt y
+después se adapta a la API real del servidor (el archivo está en
+`design/PROMPT_STITCH.md`):
+
+```text
+Design a responsive analytics dashboard called "Laboratorio de Películas": a data lab
+where a Prolog logic engine deduces the data and Python (matplotlib, networkx) draws
+it. All UI text in Spanish. Mobile-first; must look polished on a phone and on a wide
+desktop screen. One page, no tabs.
+
+Style: professional data product, dark theme, calm and spacious. Background #111317,
+cards #1e2024 with 16px radius and a hairline border, amber #f5b942 as the Prolog
+accent and a cool blue #6cb6ff as the Python accent, off-white text #e2e2e8, muted
+secondary text. Inter for UI, a serif display (Playfair Display) for the page title
+and the actor name. Generous padding (24px in cards), 24px gaps, clear hierarchy.
+No stock photos, no posters, no user avatar menu.
+
+IMPORTANT about charts: every chart is a ready-made dark PNG image (background
+#111317, amber bars) served by the backend. Do not draw charts with HTML or CSS.
+Show each chart as an <img> inside a card with a fixed aspect ratio (9:5 for bar
+charts, 9:7 for the network), object-fit contain, a skeleton shimmer while loading,
+and never let the image overflow or get cropped.
+
+Layout, top to bottom:
+
+1. Sticky header: title "Laboratorio de Películas", subtitle "Prolog deduce · Python
+   dibuja", and on the right a compact search field (placeholder "Tom Hanks") with a
+   button "Analizar".
+
+2. KPI row "Toda la base": four stat tiles — "36 273 películas", "133 326 créditos",
+   "3.8 actores por película (media)", "3 actores (mediana)". The last two carry a
+   small blue tag "Python · statistics".
+
+3. Actor section. A header with an initials avatar, the actor name in serif
+   ("Tom Hanks") and three stat tiles: "59 películas", "Desde 1980", "Hasta 2023".
+   Below, a two-column grid on desktop (stacked on mobile):
+   - Left, wide card "Películas por año" with the bar chart image.
+   - Right, narrow card "Compañeros frecuentes": a ranked list of 12 rows, each with
+     initials avatar, name, and a count pill ("Tim Allen · 5 películas"). Rows are
+     clickable and load that actor.
+   Then a second two-column grid:
+   - Left, wide card "Red de colaboraciones" with the network image (9:7).
+   - Right, narrow card "Quién conecta la red" with tag "Python · networkx": a ranked
+     list with a thin horizontal progress bar per actor showing a score from 0 to 1
+     ("Tom Hanks 0.558", "John Goodman 0.053", "Meg Ryan 0.015").
+   Include an error state for this section: "No hay nadie con ese nombre en la base".
+
+4. Section "Toda la base": two cards side by side on desktop, stacked on mobile —
+   "Películas por década" and "Los 15 géneros con más películas", each with its chart
+   image.
+
+5. Every chart card has a footer strip "Cómo se hizo" with two small code chips joined
+   by an arrow: an amber chip with the Prolog rule (for example
+   "grafica_actor/2") → a blue chip with the Python function (for example
+   "graficas.barras"). Monospace, small, unobtrusive.
+
+6. Footer: "Prolog deduce los datos; Python solo los dibuja." and "Datos: Wikipedia".
+
+Plain HTML and CSS (Tailwind is fine), no JavaScript frameworks. Accessible contrast,
+visible focus states, minimum 44px touch targets.
+```
+
+Resultado, ya conectado al servidor Prolog:
+
+![Tablero «Laboratorio de Películas» con el análisis de Tom Hanks](capturas/tablero.png)
+
+## Tutorial
+
 El tutorial está escrito para **Ubuntu Server 24.04** (también WSL y AWS Academy).
 
 | Archivo | Qué hace |
 |---|---|
 | `analisis.pl` | Reglas que deducen los datos y llaman a Python con `py_call/2`. |
 | `graficas.py` | Funciones de Python que dibujan; no deciden nada. |
-| `servidor.pl` | Servidor web de Prolog que devuelve las imágenes. |
+| `servidor.pl` | Servidor web de Prolog: imágenes, JSON y la página. |
+| `web/index.html` | El tablero, diseñado en Google Stitch. |
 | `desde_python.py` | El sentido contrario, opcional: Python pregunta a Prolog. |
 
 ## 1. Instalación
@@ -99,7 +170,8 @@ Media = 3.7658456671562535,
 Mediana = 3.0.
 ```
 
-La lista `Ns` tiene más de 35 000 números y cruza a Python en una sola llamada.
+La lista `Ns` tiene más de 35 000 números y cruza a Python en una sola llamada. La regla
+está marcada con `:- table`, así que la respuesta se calcula una vez y se recuerda.
 
 ## 5. Gráficas con matplotlib
 
@@ -165,17 +237,19 @@ swipl servidor.pl          # http://localhost:8081/
 
 | Ruta | Responde |
 |---|---|
-| `/` | Página con las cuatro gráficas; `/?actor=Meryl Streep` cambia de actor. |
+| `/` | El tablero; `/?actor=Meryl Streep` abre con ese actor. |
 | `/grafica/decadas` | PNG de películas por década. |
 | `/grafica/generos` | PNG de los 15 géneros con más películas. |
 | `/grafica/actor?nombre=Tom Hanks` | PNG de películas por año del actor. |
 | `/grafica/red?nombre=Tom Hanks` | PNG de su red de colaboraciones. |
+| `/api/base` | JSON con películas, créditos y reparto medio y mediano. |
+| `/api/actor?nombre=Tom Hanks` | JSON con carrera, compañeros frecuentes y centralidad en su red. |
 
 En AWS Academy abre el puerto 8081 en el grupo de seguridad de la instancia y entra con
 su IP pública. En WSL basta `http://localhost:8081/` desde Windows.
 
-La página se escribe con `library(http/html_write)`, que representa el HTML como
-términos Prolog.
+La página (`web/index.html`) solo pregunta: pide las cifras a las rutas JSON y muestra las
+imágenes que devuelve el servidor. Carga Tailwind y las fuentes desde internet.
 
 ## 8. El sentido contrario (opcional)
 

@@ -6,7 +6,10 @@
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/http_parameters)).
-:- use_module(library(http/html_write)).
+:- use_module(library(http/http_json)).
+:- use_module(library(aggregate)).
+:- use_module(library(apply)).
+:- use_module('../logicDemo/consultas').
 :- use_module(analisis).
 
 :- initialization(main, main).
@@ -16,6 +19,8 @@
 :- http_handler(root('grafica/generos'),  g_generos, []).
 :- http_handler(root('grafica/actor'),    g_actor,   []).
 :- http_handler(root('grafica/red'),      g_red,     []).
+:- http_handler(root(api/base),           api_base,  []).
+:- http_handler(root(api/actor),          api_actor, []).
 
 main(Argv) :-
     (   Argv = [A|_], atom_number(A, Puerto) -> true ; Puerto = 8081 ),
@@ -23,29 +28,9 @@ main(Argv) :-
     format("Demo en http://localhost:~w/~n", [Puerto]),
     thread_get_message(_).
 
-% La página se escribe con html_write: HTML como términos Prolog.
+% La página es estática: solo pregunta a las rutas de abajo.
 inicio(Peticion) :-
-    http_parameters(Peticion, [actor(Actor, [default('Tom Hanks')])]),
-    reply_html_page(
-        [ title('Películas en Prolog + Python'),
-          meta([name(viewport), content('width=device-width, initial-scale=1')]),
-          style('body{font:16px system-ui;background:#111317;color:#e2e2e8;max-width:920px;
-                 margin:0 auto;padding:16px} img{max-width:100%;border-radius:12px;margin:8px 0}
-                 input,button{font:inherit;padding:8px} h1,h2{font-family:Georgia,serif}')
-        ],
-        [ h1('Películas en Prolog + Python'),
-          p('Prolog deduce los datos; Python (matplotlib y networkx) solo los dibuja.'),
-          form([action('/')],
-               [ input([name(actor), value(Actor)]), ' ',
-                 button('Ver actor')
-               ]),
-          h2(Actor),
-          img([src('/grafica/actor?nombre=' + encode(Actor)), alt('Películas por año')]),
-          img([src('/grafica/red?nombre=' + encode(Actor)), alt('Red de colaboraciones')]),
-          h2('Toda la base'),
-          img([src('/grafica/decadas'), alt('Películas por década')]),
-          img([src('/grafica/generos'), alt('Géneros')])
-        ]).
+    http_reply_file('web/index.html', [], Peticion).
 
 g_decadas(Peticion) :- grafica_decadas(Archivo), imagen(Archivo, Peticion).
 g_generos(Peticion) :- grafica_generos(Archivo), imagen(Archivo, Peticion).
@@ -66,3 +51,24 @@ g_red(Peticion) :-
 
 imagen(Archivo, Peticion) :-
     http_reply_file(Archivo, [unsafe(true), cache(false)], Peticion).
+
+% GET /api/base — cifras de toda la base
+api_base(_) :-
+    aggregate_all(count, pelicula(_, _, _), Peliculas),
+    aggregate_all(count, actua(_, _), Creditos),
+    reparto_tipico(Media, Mediana),
+    reply_json_dict(_{peliculas:Peliculas, creditos:Creditos,
+                      reparto_media:Media, reparto_mediana:Mediana}).
+
+% GET /api/actor?nombre=Tom Hanks — carrera (Prolog) y centralidad (networkx)
+api_actor(Peticion) :-
+    http_parameters(Peticion, [nombre(Actor, [])]),
+    (   carrera(Actor, Primer, Ultimo, Cuantas),
+        centrales(Actor, 13, Cs)
+    ->  companeros(Actor, 12, Ps),
+        maplist([N-B, _{actor:B, peliculas:N}]>>true, Ps, Companeros),
+        maplist([A-P, _{actor:A, puntaje:P}]>>true, Cs, Centrales),
+        reply_json_dict(_{actor:Actor, primer:Primer, ultimo:Ultimo, peliculas:Cuantas,
+                          companeros:Companeros, centrales:Centrales})
+    ;   reply_json_dict(_{error:"no encontrado"}, [status(404)])
+    ).

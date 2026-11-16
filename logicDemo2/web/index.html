@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<!-- Diseño generado en Google Stitch (design/PROMPT_STITCH.md) y adaptado a la API real
+     de servidor.pl. Se quitaron del export el menú, la foto de perfil y los textos de
+     muestra que la base no respalda; los nombres de reglas y funciones son los reales. -->
+<html class="dark" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Laboratorio de Películas</title>
+<style>html,body{margin:0;padding:0}[hidden]{display:none!important}</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {darkMode:"class",theme:{extend:{
+  colors:{"background":"#111317","surface":"#111317","surface-container-lowest":"#0c0e12","surface-container-low":"#1a1c20","surface-container":"#1e2024","surface-container-high":"#282a2e","surface-container-highest":"#333539","primary":"#ffda9c","primary-container":"#f5b942","primary-fixed-dim":"#f9bc45","on-primary":"#422d00","secondary":"#9bcaff","on-surface":"#e2e2e8","on-surface-variant":"#d4c4af","outline":"#9c8f7b","error":"#ffb4ab"},
+  spacing:{"space-xs":"0.25rem","space-sm":"0.5rem","space-md":"1rem","space-lg":"1.5rem","space-xl":"2rem","gutter":"1.5rem"},
+  fontFamily:{sans:["Inter","system-ui","sans-serif"],serif:["Playfair Display","Georgia","serif"]},
+  fontSize:{"body-sm":["12px",{lineHeight:"16px"}],"body-md":["14px",{lineHeight:"20px"}],"body-lg":["16px",{lineHeight:"24px"}],"headline-sm":["18px",{lineHeight:"24px",fontWeight:"500"}],"headline-md":["24px",{lineHeight:"32px",fontWeight:"600"}],"headline-lg":["32px",{lineHeight:"40px",fontWeight:"600"}]}
+}}};
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+</head>
+<body class="bg-surface font-sans text-body-md text-on-surface min-h-screen flex flex-col">
+
+<header class="sticky top-0 z-40 bg-surface/80 backdrop-blur-xl border-b border-white/10">
+  <div class="max-w-7xl mx-auto px-gutter py-space-md flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+    <div class="flex items-center gap-space-md">
+      <span class="material-symbols-outlined text-primary text-2xl">science</span>
+      <div>
+        <h1 class="font-serif text-headline-md text-primary tracking-tight">Laboratorio de Películas</h1>
+        <p class="text-body-sm text-on-surface-variant font-mono">Prolog deduce · Python dibuja</p>
+      </div>
+    </div>
+    <form id="f-actor" class="flex items-center gap-space-sm w-full md:w-auto">
+      <input name="nombre" required aria-label="Actor o actriz" class="flex-1 md:w-80 min-h-[44px] bg-surface-container text-on-surface placeholder:text-outline rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary border border-white/10" placeholder="Tom Hanks" type="text"/>
+      <button class="min-h-[44px] bg-primary text-on-primary font-medium px-5 py-2.5 rounded-xl hover:bg-primary-fixed-dim transition-colors flex items-center gap-2">
+        <span>Analizar</span><span class="material-symbols-outlined text-sm">search</span>
+      </button>
+    </form>
+  </div>
+</header>
+
+<main class="flex-1 max-w-7xl mx-auto px-gutter w-full py-space-xl flex flex-col gap-space-xl">
+
+  <!-- Toda la base: cifras -->
+  <section class="flex flex-col gap-space-md">
+    <h2 class="font-serif text-headline-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span>Toda la base</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md" id="kpis"></div>
+  </section>
+
+  <!-- Actor -->
+  <div hidden id="error">
+    <div class="bg-surface-container p-space-lg rounded-2xl border border-error/20 text-center flex flex-col items-center gap-2">
+      <span class="material-symbols-outlined text-error text-4xl">error</span>
+      <p class="font-serif text-headline-sm">No hay nadie con ese nombre en la base</p>
+      <p class="text-body-sm text-on-surface-variant">El nombre debe coincidir con el de la base, por ejemplo «Meryl Streep».</p>
+    </div>
+  </div>
+
+  <section class="flex flex-col gap-space-lg" id="actor">
+    <div class="bg-surface-container p-space-lg rounded-2xl border border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-space-lg">
+      <div class="flex items-center gap-space-md">
+        <div id="a-ini" class="w-16 h-16 shrink-0 rounded-full bg-primary/20 text-primary flex items-center justify-center font-serif text-headline-md border border-primary/30"></div>
+        <h2 id="a-nombre" class="font-serif text-headline-lg"></h2>
+      </div>
+      <div class="grid grid-cols-3 gap-space-sm w-full md:w-auto" id="a-stats"></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+      <div class="lg:col-span-8" data-grafica="actor" data-titulo="Películas por año" data-sub="Créditos del actor en cada año" data-icono="bar_chart" data-ratio="9/5" data-prolog="grafica_actor/2" data-python="graficas.barras"></div>
+      <div class="lg:col-span-4 bg-surface-container p-space-lg rounded-2xl border border-white/10 flex flex-col">
+        <div class="flex items-start justify-between mb-space-md">
+          <div><h3 class="font-serif text-headline-sm">Compañeros frecuentes</h3>
+          <p class="text-body-sm text-on-surface-variant">Con quién comparte más películas</p></div>
+          <span class="material-symbols-outlined text-secondary">handshake</span>
+        </div>
+        <div class="flex flex-col gap-2 max-h-[420px] overflow-y-auto pr-1 flex-1" id="a-comp"></div>
+        <div class="mt-space-md pt-space-md border-t border-white/5 text-body-sm font-mono text-on-surface-variant">
+          <span class="bg-primary/20 text-primary px-2 py-0.5 rounded">companeros/3</span> <span class="ml-1">solo Prolog</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+      <div class="lg:col-span-8" data-grafica="red" data-titulo="Red de colaboraciones" data-sub="El actor, sus 12 compañeros más frecuentes y lo que comparten entre sí" data-icono="hub" data-ratio="9/7" data-prolog="grafica_red/2" data-python="graficas.red"></div>
+      <div class="lg:col-span-4 bg-surface-container p-space-lg rounded-2xl border border-white/10 flex flex-col">
+        <div class="flex items-start justify-between gap-2 mb-space-md">
+          <div><h3 class="font-serif text-headline-sm">Quién conecta la red</h3>
+          <p class="text-body-sm text-on-surface-variant">Centralidad de intermediación, de 0 a 1</p></div>
+          <span class="shrink-0 bg-secondary/10 text-secondary text-body-sm px-2 py-0.5 rounded font-mono">Python · networkx</span>
+        </div>
+        <div class="flex flex-col gap-4 py-2 flex-1" id="a-cent"></div>
+        <div class="mt-space-md pt-space-md border-t border-white/5 flex items-center gap-2 text-body-sm font-mono text-on-surface-variant flex-wrap">
+          <span class="bg-primary/20 text-primary px-2 py-0.5 rounded">centrales/3</span><span>→</span>
+          <span class="bg-secondary/20 text-secondary px-2 py-0.5 rounded">graficas.centrales</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Toda la base: gráficas -->
+  <section class="flex flex-col gap-space-md">
+    <h2 class="font-serif text-headline-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-secondary"></span>Estadísticas de toda la base</h2>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg">
+      <div data-grafica="decadas" data-titulo="Películas por década" data-sub="De 1900 a 2023" data-icono="timeline" data-ratio="9/5" data-prolog="grafica_decadas/1" data-python="graficas.barras"></div>
+      <div data-grafica="generos" data-titulo="Los 15 géneros con más películas" data-sub="Una película puede tener varios géneros" data-icono="category" data-ratio="9/5" data-prolog="grafica_generos/1" data-python="graficas.barras"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="w-full bg-surface-container-low border-t border-white/10 py-space-lg">
+  <div class="max-w-7xl mx-auto px-gutter flex flex-col md:flex-row items-center justify-between gap-space-sm text-on-surface-variant text-body-sm font-mono text-center">
+    <span class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-base">terminal</span>Prolog deduce los datos; Python solo los dibuja.</span>
+    <span>Datos: Wikipedia</span>
+  </div>
+</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const miles = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+const iniciales = n => n.split(/\s+/).filter(Boolean).map(p => p[0]).slice(0, 2).join('').toUpperCase();
+
+// Tarjetas de gráfica: la imagen llega ya dibujada por Python.
+document.querySelectorAll('[data-grafica]').forEach(c => {
+  const d = c.dataset;
+  c.classList.add('bg-surface-container', 'p-space-lg', 'rounded-2xl', 'border', 'border-white/10', 'flex', 'flex-col');
+  c.innerHTML = `
+    <div class="flex items-start justify-between mb-space-md">
+      <div><h3 class="font-serif text-headline-sm">${d.titulo}</h3>
+      <p class="text-body-sm text-on-surface-variant">${d.sub}</p></div>
+      <span class="material-symbols-outlined text-primary">${d.icono}</span>
+    </div>
+    <div class="relative w-full bg-surface rounded-lg overflow-hidden border border-white/5" style="aspect-ratio:${d.ratio}">
+      <div class="skel absolute inset-0 bg-surface-container-high animate-pulse flex items-center justify-center">
+        <span class="text-body-sm font-mono text-outline">Dibujando…</span></div>
+      <img alt="${d.titulo}" class="relative w-full h-full object-contain"/>
+    </div>
+    <div class="mt-space-md pt-space-md border-t border-white/5 flex items-center gap-2 text-body-sm font-mono text-on-surface-variant flex-wrap">
+      <span class="bg-primary/20 text-primary px-2 py-0.5 rounded">${d.prolog}</span><span>→</span>
+      <span class="bg-secondary/20 text-secondary px-2 py-0.5 rounded">${d.python}</span>
+    </div>`;
+  const img = c.querySelector('img'), skel = c.querySelector('.skel');
+  img.onload = () => skel.hidden = true;
+});
+function grafica(nombre, url) {
+  const c = document.querySelector(`[data-grafica="${nombre}"]`);
+  c.querySelector('.skel').hidden = false;
+  c.querySelector('img').src = url;
+}
+
+// Cifras de toda la base
+const kpi = (rot, valor, sub, icono, color, tag) => `
+  <div class="bg-surface-container p-space-lg rounded-2xl border border-white/10 flex flex-col justify-between gap-space-md">
+    <div class="flex items-center justify-between text-on-surface-variant">
+      <span class="text-body-sm uppercase tracking-wider font-mono">${rot}</span>
+      <span class="material-symbols-outlined ${color}">${icono}</span>
+    </div>
+    <div><div class="font-serif text-headline-lg ${color}">${valor}</div>
+    <div class="text-body-sm text-on-surface-variant mt-1">${sub}</div></div>
+    ${tag ? '<div><span class="inline-block bg-secondary/10 text-secondary text-body-sm px-2.5 py-1 rounded-full font-mono">Python · statistics</span></div>' : ''}
+  </div>`;
+fetch('/api/base').then(r => r.json()).then(b => $('kpis').innerHTML =
+  kpi('Películas', miles(b.peliculas), 'de 1900 a 2023', 'movie', 'text-primary') +
+  kpi('Créditos', miles(b.creditos), 'apariciones de reparto', 'groups', 'text-secondary') +
+  kpi('Reparto medio', b.reparto_media.toFixed(1), 'actores por película (media)', 'analytics', 'text-on-surface', true) +
+  kpi('Reparto mediano', b.reparto_mediana, 'actores (mediana)', 'show_chart', 'text-on-surface', true));
+
+// Actor
+async function actor(nombre) {
+  $('f-actor').nombre.value = nombre;
+  const r = await fetch('/api/actor?' + new URLSearchParams({nombre}));
+  $('error').hidden = r.ok;
+  $('actor').hidden = !r.ok;
+  if (!r.ok) return;
+  const a = await r.json();
+  $('a-ini').textContent = iniciales(a.actor);
+  $('a-nombre').textContent = a.actor;
+  const stat = (k, v, c) => `<div class="bg-surface-container-low px-4 py-3 rounded-lg border border-white/5 flex flex-col">
+    <span class="text-body-sm text-on-surface-variant font-mono">${k}</span>
+    <span class="font-serif text-headline-md ${c}">${v}</span></div>`;
+  $('a-stats').innerHTML = stat('Películas', a.peliculas, 'text-primary') + stat('Desde', a.primer, '') + stat('Hasta', a.ultimo, '');
+  $('a-comp').innerHTML = a.companeros.map(c => `
+    <button data-actor="${esc(c.actor)}" class="w-full min-h-[44px] flex items-center justify-between gap-2 p-2.5 rounded-lg bg-surface-container-low hover:bg-surface-container-high transition-colors text-left border border-white/5 group">
+      <span class="flex items-center gap-3 min-w-0 pointer-events-none">
+        <span class="w-8 h-8 shrink-0 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-body-sm font-mono">${esc(iniciales(c.actor))}</span>
+        <span class="truncate group-hover:text-primary transition-colors">${esc(c.actor)}</span>
+      </span>
+      <span class="shrink-0 bg-primary/20 text-primary text-body-sm px-2.5 py-0.5 rounded-full font-mono pointer-events-none">${c.peliculas} ${c.peliculas === 1 ? 'película' : 'películas'}</span>
+    </button>`).join('');
+  const top = a.centrales.slice(0, 8), max = top[0] ? top[0].puntaje || 1 : 1;
+  $('a-cent').innerHTML = top.map((c, i) => `
+    <div class="flex flex-col gap-1">
+      <div class="flex justify-between gap-2"><span class="font-medium truncate">${esc(c.actor)}</span>
+      <span class="font-mono ${i ? 'text-secondary' : 'text-primary'}">${c.puntaje.toFixed(3)}</span></div>
+      <div class="w-full bg-surface-container-low h-2 rounded-full overflow-hidden">
+        <div class="${i ? 'bg-secondary' : 'bg-primary'} h-full rounded-full" style="width:${(100 * c.puntaje / max).toFixed(1)}%"></div>
+      </div>
+    </div>`).join('');
+  const q = '?' + new URLSearchParams({nombre: a.actor});
+  grafica('actor', '/grafica/actor' + q);
+  grafica('red', '/grafica/red' + q);
+}
+$('f-actor').onsubmit = e => { e.preventDefault(); actor(e.target.nombre.value.trim()); };
+$('a-comp').onclick = e => { if (e.target.dataset.actor) { actor(e.target.dataset.actor); scrollTo({top: 0, behavior: 'smooth'}); } };
+
+grafica('decadas', '/grafica/decadas');
+grafica('generos', '/grafica/generos');
+actor(new URLSearchParams(location.search).get('actor') || 'Tom Hanks');
+</script>
+</body>
+</html>
